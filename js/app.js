@@ -540,30 +540,97 @@ const UI = {
   // 予約フォームを表示
   showReservationForm() {
     document.getElementById('reservationForm').classList.remove('hidden');
+    this.renderLocationButtons();
   },
 
-  // 乗車場所の選択肢を生成
-  populatePickupLocations() {
-    const select = document.getElementById('pickupLocation');
-    if (!select) return;
+  // 乗車場所ボタンを生成
+  renderLocationButtons() {
+    const container = document.getElementById('locationButtons');
+    const hiddenInput = document.getElementById('pickupLocation');
+    if (!container) return;
 
-    // 既存のオプションをクリア（最初の「選択してください」は残す）
-    while (select.options.length > 1) {
-      select.remove(1);
-    }
+    container.innerHTML = '';
 
     AppState.pickupLocations.forEach(location => {
-      const option = document.createElement('option');
-      option.value = location.id;
-      option.textContent = location.name;
-      select.appendChild(option);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'location-btn';
+      btn.textContent = location.name || location;
+      btn.dataset.value = location.id || location.name || location;
+
+      btn.addEventListener('click', () => {
+        // 他のボタンの選択を解除
+        container.querySelectorAll('.location-btn').forEach(b => b.classList.remove('selected'));
+        // このボタンを選択
+        btn.classList.add('selected');
+        // hidden inputに値をセット
+        hiddenInput.value = btn.dataset.value;
+      });
+
+      container.appendChild(btn);
     });
+  },
+
+  // マイ予約を表示
+  renderMyReservations() {
+    const container = document.getElementById('myReservationsList');
+    if (!container) return;
+
+    // このブラウザの予約IDリストを取得
+    const myReservationIds = Utils.getFromStorage('grislo_my_reservations', []);
+
+    // 有効な予約のみをフィルタリング
+    const myReservations = AppState.reservations.filter(r =>
+      myReservationIds.includes(r.id) && r.status !== 'cancelled'
+    );
+
+    if (myReservations.length === 0) {
+      container.innerHTML = `
+        <div class="no-reservations">
+          <div class="no-reservations-icon">📭</div>
+          <p>まだ予約がありません</p>
+        </div>
+      `;
+      return;
+    }
+
+    // 日付順にソート（未来の予約を先に）
+    myReservations.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    container.innerHTML = myReservations.map(r => {
+      const canCancel = Utils.canCancel(r.date);
+      const locationObj = AppState.pickupLocations.find(l => l.id === r.pickupLocation || l.name === r.pickupLocation);
+      const locationName = locationObj ? locationObj.name : r.pickupLocation;
+
+      return `
+        <div class="my-reservation-card">
+          <div class="reservation-info">
+            <div class="reservation-details">
+              <div class="reservation-date">${Utils.formatDateJP(r.date)}</div>
+              <div class="reservation-time">${r.time}</div>
+              <div class="reservation-location">📍 ${locationName}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 4px;">予約番号: ${r.id}</div>
+            </div>
+            <div class="reservation-actions">
+              ${canCancel ? `
+                <button class="btn btn-sm btn-danger" onclick="App.cancelMyReservation('${r.id}')">
+                  キャンセル
+                </button>
+              ` : `
+                <span class="status-badge status-confirmed">当日</span>
+              `}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   },
 
   // 確認モーダルを表示
   showConfirmModal(formData) {
     const summary = document.getElementById('reservationSummary');
-    const location = AppState.pickupLocations.find(l => l.id === formData.pickupLocation);
+    const locationObj = AppState.pickupLocations.find(l => l.id === formData.pickupLocation || l.name === formData.pickupLocation);
+    const locationName = locationObj ? locationObj.name : formData.pickupLocation;
 
     summary.innerHTML = `
       <div class="summary-row">
@@ -572,20 +639,12 @@ const UI = {
       </div>
       <div class="summary-row">
         <span class="summary-label">乗車場所</span>
-        <span class="summary-value">${location ? location.name : formData.pickupLocation}</span>
+        <span class="summary-value">${locationName}</span>
       </div>
+      ${formData.name ? `
       <div class="summary-row">
         <span class="summary-label">お名前</span>
         <span class="summary-value">${formData.name}</span>
-      </div>
-      ${formData.contactMethod !== 'none' ? `
-      <div class="summary-row">
-        <span class="summary-label">連絡方法</span>
-        <span class="summary-value">${formData.contactMethod === 'email' ? 'メール' : 'LINE'}</span>
-      </div>
-      <div class="summary-row">
-        <span class="summary-label">連絡先</span>
-        <span class="summary-value">${formData.contactInfo}</span>
       </div>
       ` : ''}
       ${formData.notes ? `
@@ -627,10 +686,15 @@ const UI = {
     document.getElementById('selectDatePrompt').classList.remove('hidden');
     document.getElementById('timeSlotSection').classList.add('hidden');
     document.getElementById('reservationForm').classList.add('hidden');
-    document.getElementById('contactInfoGroup').classList.add('hidden');
+
+    // 場所ボタンの選択をクリア
+    const locationBtns = document.querySelectorAll('.location-btn');
+    locationBtns.forEach(btn => btn.classList.remove('selected'));
+    document.getElementById('pickupLocation').value = '';
 
     Calendar.render();
     this.updateStepIndicator();
+    this.renderMyReservations();
   },
 
   // 予約検索結果を表示
@@ -785,40 +849,20 @@ function setupEventHandlers() {
   // テーマ切り替え
   document.getElementById('themeToggle')?.addEventListener('click', () => UI.toggleTheme());
 
-  // 連絡方法の変更
-  document.getElementById('contactMethod')?.addEventListener('change', (e) => {
-    const contactGroup = document.getElementById('contactInfoGroup');
-    const contactInput = document.getElementById('contactInfo');
-    const contactLabel = document.getElementById('contactLabel');
-
-    if (e.target.value === 'none') {
-      contactGroup.classList.add('hidden');
-      contactInput.required = false;
-    } else {
-      contactGroup.classList.remove('hidden');
-      contactInput.required = true;
-      if (e.target.value === 'email') {
-        contactLabel.textContent = 'メールアドレス';
-        contactInput.type = 'email';
-        contactInput.placeholder = 'example@email.com';
-      } else {
-        contactLabel.textContent = 'LINE ID';
-        contactInput.type = 'text';
-        contactInput.placeholder = '@line_id';
-      }
-    }
-  });
-
   // 予約フォーム送信
   document.getElementById('bookingForm')?.addEventListener('submit', (e) => {
     e.preventDefault();
 
+    const pickupLocation = document.getElementById('pickupLocation').value;
+    if (!pickupLocation) {
+      Toast.show('乗車場所を選択してください', 'warning');
+      return;
+    }
+
     const formData = {
-      name: document.getElementById('customerName').value,
-      pickupLocation: document.getElementById('pickupLocation').value,
-      contactMethod: document.getElementById('contactMethod').value,
-      contactInfo: document.getElementById('contactInfo').value,
-      notes: document.getElementById('notes').value
+      name: document.getElementById('customerName').value.trim(),
+      pickupLocation: pickupLocation,
+      notes: document.getElementById('notes').value.trim()
     };
 
     AppState.currentStep = 4;
@@ -840,20 +884,32 @@ function setupEventHandlers() {
 
   // 予約確定
   document.getElementById('submitReservation')?.addEventListener('click', () => {
+    const reservationId = Utils.generateReservationId();
+    const nameInput = document.getElementById('customerName').value.trim();
+
+    // 名前が空の場合は、既存の予約数に基づいてAさん、Bさん形式で生成
+    const dateReservations = DataManager.getReservationsForDate(AppState.selectedDate);
+    const autoName = DataManager.anonymizeName(dateReservations.length);
+
     const formData = {
-      id: Utils.generateReservationId(),
-      name: document.getElementById('customerName').value,
+      id: reservationId,
+      name: nameInput || autoName,
+      displayName: autoName,
       date: Utils.formatDate(AppState.selectedDate),
       time: AppState.selectedTime,
       pickupLocation: document.getElementById('pickupLocation').value,
-      contactMethod: document.getElementById('contactMethod').value,
-      contactInfo: document.getElementById('contactInfo').value,
-      notes: document.getElementById('notes').value,
+      notes: document.getElementById('notes').value.trim(),
       status: 'confirmed',
       createdAt: new Date().toISOString()
     };
 
     DataManager.saveReservation(formData);
+
+    // マイ予約リストに保存
+    const myReservationIds = Utils.getFromStorage('grislo_my_reservations', []);
+    myReservationIds.push(reservationId);
+    Utils.saveToStorage('grislo_my_reservations', myReservationIds);
+
     UI.hideConfirmModal();
     UI.showCompleteModal(formData.id);
     Toast.show('予約が完了しました！', 'success');
@@ -910,15 +966,34 @@ async function initApp() {
   DataManager.loadReservations();
 
   // UIを初期化
-  UI.populatePickupLocations();
   Calendar.render();
   UI.updateStepIndicator();
+  UI.renderMyReservations();
 
   // イベントハンドラーを設定
   setupEventHandlers();
 
   console.log('グリスロ予約システムを初期化しました');
 }
+
+// ===================================
+// グローバルアプリオブジェクト（HTMLから呼び出し用）
+// ===================================
+const App = {
+  // マイ予約からキャンセル
+  cancelMyReservation(reservationId) {
+    if (confirm('この予約をキャンセルしますか？')) {
+      const result = DataManager.cancelReservation(reservationId);
+      if (result) {
+        Toast.show('予約をキャンセルしました', 'success');
+        UI.renderMyReservations();
+        Calendar.render();
+      } else {
+        Toast.show('キャンセルに失敗しました', 'error');
+      }
+    }
+  }
+};
 
 // DOMContentLoaded時に初期化
 document.addEventListener('DOMContentLoaded', initApp);

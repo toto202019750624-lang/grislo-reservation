@@ -126,41 +126,26 @@
           <form id="bookingForm">
             <div class="form-group">
               <label class="form-label">
-                お名前 <span class="required">*</span>
+                お名前 <span class="optional-badge">任意</span>
               </label>
-              <input type="text" class="form-input" id="customerName" placeholder="山田 太郎" required>
+              <input type="text" class="form-input" id="customerName" placeholder="空欄の場合は「Aさん」のように表示されます">
+              <p class="form-hint">入力しなくても予約できます</p>
             </div>
             <div class="form-group">
               <label class="form-label">
                 乗車場所 <span class="required">*</span>
               </label>
-              <select class="form-select" id="pickupLocation" required>
-                <option value="">選択してください</option>
-                <!-- optionsは JSで生成 -->
-              </select>
+              <div class="location-buttons" id="locationButtons">
+                <!-- JSで生成 -->
+              </div>
+              <input type="hidden" id="pickupLocation" required>
             </div>
             <div class="form-group">
-              <label class="form-label">
-                連絡方法
-              </label>
-              <select class="form-select" id="contactMethod">
-                <option value="none">連絡不要</option>
-                <option value="email">メール</option>
-                <option value="line">LINE</option>
-              </select>
-            </div>
-            <div class="form-group hidden" id="contactInfoGroup">
-              <label class="form-label" id="contactLabel">
-                連絡先
-              </label>
-              <input type="text" class="form-input" id="contactInfo" placeholder="">
-            </div>
-            <div class="form-group">
-              <label class="form-label">備考</label>
+              <label class="form-label">備考 <span class="optional-badge">任意</span></label>
               <textarea class="form-textarea" id="notes" rows="2" placeholder="車椅子利用など、特記事項があればご記入ください"></textarea>
             </div>
             <button type="submit" class="btn btn-primary btn-block btn-lg">
-              予約内容を確認する
+              予約する
             </button>
           </form>
         </div>
@@ -179,13 +164,25 @@
       </div>
     </div>
 
+    <!-- マイ予約セクション -->
+    <section class="card mt-4 animate-slide-up" id="myReservations">
+      <div class="card-header">
+        <div class="card-icon">📋</div>
+        <h2 class="card-title">マイ予約</h2>
+      </div>
+      <p class="mb-2">このブラウザで行った予約を確認・キャンセルできます。</p>
+      <div id="myReservationsList">
+        <!-- JSで生成 -->
+      </div>
+    </section>
+
     <!-- 予約確認セクション -->
     <section class="card mt-4 animate-slide-up" id="check">
       <div class="card-header">
         <div class="card-icon">🔍</div>
-        <h2 class="card-title">予約の確認・キャンセル</h2>
+        <h2 class="card-title">予約番号で検索</h2>
       </div>
-      <p class="mb-2">予約時に発行された予約番号を入力してください。</p>
+      <p class="mb-2">予約番号がわかる場合はこちらで検索できます。</p>
       <form id="checkReservationForm" class="flex gap-2" style="flex-wrap: wrap;">
         <input type="text" class="form-input" id="reservationId" placeholder="予約番号（例: RES-20260102-001）"
           style="flex: 1; min-width: 200px;">
