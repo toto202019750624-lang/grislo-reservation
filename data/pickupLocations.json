@@ -1,0 +1,9 @@
+{
+  "locations": [
+    { "id": "loc_001", "name": "町役場前", "address": "" },
+    { "id": "loc_002", "name": "駅前", "address": "" },
+    { "id": "loc_003", "name": "コミュニティセンター前", "address": "" },
+    { "id": "loc_004", "name": "図書館前", "address": "" },
+    { "id": "loc_005", "name": "商店街入口", "address": "" }
+  ]
+}

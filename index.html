@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="町のグリスロ（小型電動モビリティ）予約システム。LINEやWebから簡単に予約できます。">
+  <title>グリスロ予約システム</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- スタイルシート -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+  <!-- ヘッダー -->
+  <header class="header">
+    <div class="header-content">
+      <a href="index.html" class="logo">
+        <div class="logo-icon">🚐</div>
+        <span class="logo-text">グリスロ予約</span>
+      </a>
+      <nav class="header-nav">
+        <a href="#reservation" class="nav-link">予約する</a>
+        <a href="#check" class="nav-link">予約確認</a>
+        <a href="admin.html" class="nav-link">管理者</a>
+        <button class="theme-toggle" id="themeToggle" aria-label="テーマ切替">🌙</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- メインコンテンツ -->
+  <main class="main-container">
+    <!-- ページタイトル -->
+    <div class="page-title animate-slide-up">
+      <h1>🚐 町のグリスロ予約</h1>
+      <p>無料で町内を移動できる小型電動モビリティの予約サービスです</p>
+    </div>
+
+    <!-- ステップインジケーター -->
+    <div class="step-indicator" id="stepIndicator">
+      <div class="step active" data-step="1">
+        <div class="step-number">1</div>
+        <span class="step-label">日付選択</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" data-step="2">
+        <div class="step-number">2</div>
+        <span class="step-label">時間選択</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" data-step="3">
+        <div class="step-number">3</div>
+        <span class="step-label">情報入力</span>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" data-step="4">
+        <div class="step-number">4</div>
+        <span class="step-label">確認</span>
+      </div>
+    </div>
+
+    <!-- 予約フロー -->
+    <div class="reservation-flow" id="reservation">
+      <!-- 左カラム: カレンダー -->
+      <div class="card animate-slide-up" id="calendarCard">
+        <div class="card-header">
+          <div class="card-icon">📅</div>
+          <h2 class="card-title">日付を選択</h2>
+        </div>
+        <div class="calendar-container">
+          <div class="calendar-header">
+            <button class="calendar-nav-btn" id="prevMonth" aria-label="前月">◀</button>
+            <div class="calendar-month-year" id="calendarMonthYear"></div>
+            <button class="calendar-nav-btn" id="nextMonth" aria-label="次月">▶</button>
+          </div>
+          <div class="calendar-grid" id="calendarGrid">
+            <!-- カレンダーは JSで生成 -->
+          </div>
+        </div>
+        <div class="mt-2">
+          <div class="flex items-center gap-2" style="flex-wrap: wrap;">
+            <span style="display: flex; align-items: center; gap: 4px;">
+              <span style="width: 12px; height: 12px; background: var(--secondary-color); border-radius: 50%;"></span>
+              <small>予約可能</small>
+            </span>
+            <span style="display: flex; align-items: center; gap: 4px;">
+              <span style="width: 12px; height: 12px; background: var(--danger-color); border-radius: 50%;"></span>
+              <small>満席</small>
+            </span>
+            <span style="display: flex; align-items: center; gap: 4px;">
+              <span
+                style="width: 12px; height: 12px; background: var(--accent-color); border: 2px solid var(--accent-color); border-radius: 50%;"></span>
+              <small>今日</small>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右カラム: 時間選択 & フォーム -->
+      <div class="card animate-slide-up" id="formCard">
+        <!-- 時間選択（初期は非表示） -->
+        <div id="timeSlotSection" class="hidden">
+          <div class="card-header">
+            <div class="card-icon">🕐</div>
+            <h2 class="card-title">時間を選択</h2>
+          </div>
+          <p class="mb-2" id="selectedDateDisplay"></p>
+          <div class="time-slots-grid" id="timeSlotsGrid">
+            <!-- 時間スロットは JSで生成 -->
+          </div>
+        </div>
+
+        <!-- 予約フォーム（初期は非表示） -->
+        <div id="reservationForm" class="hidden mt-3">
+          <div class="card-header">
+            <div class="card-icon">✍️</div>
+            <h2 class="card-title">予約情報の入力</h2>
+          </div>
+          <form id="bookingForm">
+            <div class="form-group">
+              <label class="form-label">
+                お名前 <span class="required">*</span>
+              </label>
+              <input type="text" class="form-input" id="customerName" placeholder="山田 太郎" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">
+                乗車場所 <span class="required">*</span>
+              </label>
+              <select class="form-select" id="pickupLocation" required>
+                <option value="">選択してください</option>
+                <!-- optionsは JSで生成 -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">
+                連絡方法
+              </label>
+              <select class="form-select" id="contactMethod">
+                <option value="none">連絡不要</option>
+                <option value="email">メール</option>
+                <option value="line">LINE</option>
+              </select>
+            </div>
+            <div class="form-group hidden" id="contactInfoGroup">
+              <label class="form-label" id="contactLabel">
+                連絡先
+              </label>
+              <input type="text" class="form-input" id="contactInfo" placeholder="">
+            </div>
+            <div class="form-group">
+              <label class="form-label">備考</label>
+              <textarea class="form-textarea" id="notes" rows="2" placeholder="車椅子利用など、特記事項があればご記入ください"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+              予約内容を確認する
+            </button>
+          </form>
+        </div>
+
+        <!-- 日付未選択時のメッセージ -->
+        <div id="selectDatePrompt">
+          <div class="text-center" style="padding: 3rem 1rem;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
+            <h3 style="margin-bottom: 0.5rem;">日付を選択してください</h3>
+            <p style="color: var(--text-secondary);">
+              左のカレンダーから予約したい日付を選択してください。<br>
+              緑の印がついている日が予約可能日です。
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 予約確認セクション -->
+    <section class="card mt-4 animate-slide-up" id="check">
+      <div class="card-header">
+        <div class="card-icon">🔍</div>
+        <h2 class="card-title">予約の確認・キャンセル</h2>
+      </div>
+      <p class="mb-2">予約時に発行された予約番号を入力してください。</p>
+      <form id="checkReservationForm" class="flex gap-2" style="flex-wrap: wrap;">
+        <input type="text" class="form-input" id="reservationId" placeholder="予約番号（例: RES-20260102-001）"
+          style="flex: 1; min-width: 200px;">
+        <button type="submit" class="btn btn-secondary">検索</button>
+      </form>
+      <div id="reservationResult" class="mt-2 hidden"></div>
+    </section>
+  </main>
+
+  <!-- 確認モーダル -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">予約内容の確認</h3>
+        <button class="modal-close" id="closeModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="reservation-summary" id="reservationSummary">
+          <!-- 予約内容は JSで生成 -->
+        </div>
+        <div class="alert alert-info">
+          <span class="alert-icon">ℹ️</span>
+          <div>
+            <strong>ご注意</strong><br>
+            キャンセルは前日までにお願いします。当日のキャンセルはできません。
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="cancelConfirm">戻る</button>
+        <button class="btn btn-success btn-lg" id="submitReservation">予約を確定する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 完了モーダル -->
+  <div class="modal-overlay" id="completeModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">🎉 予約完了</h3>
+        <button class="modal-close" id="closeCompleteModal">✕</button>
+      </div>
+      <div class="modal-body text-center">
+        <div style="font-size: 5rem; margin-bottom: 1rem;">✅</div>
+        <p style="font-size: 1.25rem; margin-bottom: 1rem;">ご予約ありがとうございます！</p>
+        <div class="alert alert-success">
+          <span class="alert-icon">📋</span>
+          <div>
+            <strong>予約番号</strong><br>
+            <span id="completedReservationId" style="font-size: 1.5rem; font-weight: bold;"></span>
+          </div>
+        </div>
+        <p class="mt-2" style="color: var(--text-secondary);">
+          この予約番号は予約の確認やキャンセルに必要です。<br>
+          スクリーンショットなどで保存してください。
+        </p>
+      </div>
+      <div class="modal-footer justify-center">
+        <button class="btn btn-primary btn-lg" id="closeComplete">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト通知コンテナ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- フッター -->
+  <footer class="footer">
+    <p class="footer-text">© 2026 町のグリスロ予約システム</p>
+  </footer>
+
+  <!-- JavaScript -->
+  <script src="js/app.js"></script>
+</body>
+
+</html>

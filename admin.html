@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="ja" data-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="グリスロ予約システム 管理者ダッシュボード">
+    <title>管理者ダッシュボード - グリスロ予約</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- スタイルシート -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 管理者ページ固有のスタイル */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid var(--glass-border);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-light), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .schedule-form {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .time-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .time-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .time-checkbox:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .time-checkbox input {
+            accent-color: var(--primary-color);
+        }
+
+        .time-checkbox.checked {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .time-checkbox.custom-time {
+            background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+            color: white;
+            position: relative;
+        }
+
+        .remove-time-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-left: 0.25rem;
+            transition: var(--transition-fast);
+        }
+
+        .remove-time-btn:hover {
+            background: var(--danger-color);
+        }
+
+        .schedule-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+            margin-bottom: 0.5rem;
+        }
+
+        .schedule-date {
+            font-weight: 600;
+        }
+
+        .schedule-times {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+        }
+
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .bulk-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ヘッダー -->
+    <header class="header">
+        <div class="header-content">
+            <a href="index.html" class="logo">
+                <div class="logo-icon">🚐</div>
+                <span class="logo-text">グリスロ予約</span>
+            </a>
+            <nav class="header-nav">
+                <a href="index.html" class="nav-link">予約ページ</a>
+                <span class="nav-link" id="adminUserName" style="color: var(--secondary-color);"></span>
+                <button class="btn btn-sm btn-secondary hidden" id="logoutBtn">ログアウト</button>
+                <button class="theme-toggle" id="themeToggle" aria-label="テーマ切替">🌙</button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="main-container">
+        <!-- ログイン画面 -->
+        <div id="loginSection" class="login-container">
+            <div class="card login-card animate-slide-up">
+                <div class="card-header">
+                    <div class="card-icon">🔐</div>
+                    <h2 class="card-title">管理者ログイン</h2>
+                </div>
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">パスワード</label>
+                        <input type="password" class="form-input" id="adminPassword" placeholder="管理者パスワード" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">ログイン</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 管理者ダッシュボード -->
+        <div id="adminDashboard" class="hidden">
+            <div class="page-title animate-slide-up">
+                <h1>📊 管理者ダッシュボード</h1>
+                <p>予約管理・運行日程登録</p>
+            </div>
+
+            <div class="admin-layout">
+                <!-- サイドバー -->
+                <aside class="admin-sidebar">
+                    <nav class="admin-nav">
+                        <button class="admin-nav-item active" data-section="overview">
+                            📊 概要
+                        </button>
+                        <button class="admin-nav-item" data-section="reservations">
+                            📋 予約一覧
+                        </button>
+                        <button class="admin-nav-item" data-section="schedule">
+                            📅 運行日程
+                        </button>
+                        <button class="admin-nav-item" data-section="locations">
+                            📍 乗車場所
+                        </button>
+                        <button class="admin-nav-item" data-section="settings">
+                            ⚙️ 設定
+                        </button>
+                    </nav>
+                </aside>
+
+                <!-- メインコンテンツ -->
+                <div class="admin-content">
+                    <!-- 概要セクション -->
+                    <section id="overviewSection" class="animate-fade-in">
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <div class="stat-value" id="statTodayReservations">0</div>
+                                <div class="stat-label">今日の予約</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="statTotalReservations">0</div>
+                                <div class="stat-label">総予約数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="statUpcomingDays">0</div>
+                                <div class="stat-label">運行予定日</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="statCancelled">0</div>
+                                <div class="stat-label">キャンセル数</div>
+                            </div>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📅</div>
+                                <h3 class="card-title">今後の予約</h3>
+                            </div>
+                            <div class="table-container">
+                                <table class="table" id="upcomingReservationsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>日時</th>
+                                            <th>お名前</th>
+                                            <th>乗車場所</th>
+                                            <th>ステータス</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- JSで生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 予約一覧セクション -->
+                    <section id="reservationsSection" class="hidden">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📋</div>
+                                <h3 class="card-title">予約管理</h3>
+                            </div>
+
+                            <div class="filter-bar">
+                                <input type="date" class="form-input" id="filterDate" style="width: auto;">
+                                <select class="form-select" id="filterStatus" style="width: auto;">
+                                    <option value="">全ステータス</option>
+                                    <option value="confirmed">確定</option>
+                                    <option value="cancelled">キャンセル済</option>
+                                </select>
+                                <button class="btn btn-secondary" id="exportCsv">CSVエクスポート</button>
+                            </div>
+
+                            <div class="table-container">
+                                <table class="table" id="allReservationsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>予約番号</th>
+                                            <th>日時</th>
+                                            <th>お名前</th>
+                                            <th>乗車場所</th>
+                                            <th>連絡方法</th>
+                                            <th>ステータス</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- JSで生成 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 運行日程セクション -->
+                    <section id="scheduleSection" class="hidden">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="card-icon">➕</div>
+                                <h3 class="card-title">運行日程の追加</h3>
+                            </div>
+                            <form id="addScheduleForm" class="schedule-form">
+                                <div class="form-group">
+                                    <label class="form-label">日付</label>
+                                    <input type="date" class="form-input" id="scheduleDate" required
+                                        style="max-width: 300px;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">運行時間帯</label>
+                                    <div class="time-checkboxes" id="timeCheckboxes">
+                                        <!-- JSで生成 -->
+                                    </div>
+                                    <div class="flex gap-1 mt-1">
+                                        <button type="button" class="btn btn-sm btn-secondary"
+                                            id="selectAllTimes">全選択</button>
+                                        <button type="button" class="btn btn-sm btn-secondary"
+                                            id="deselectAllTimes">全解除</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">カスタム時間を追加</label>
+                                    <div class="flex gap-1" style="flex-wrap: wrap; align-items: center;">
+                                        <input type="time" class="form-input" id="customTimeInput"
+                                            style="max-width: 150px;">
+                                        <button type="button" class="btn btn-sm btn-primary" id="addCustomTime">➕
+                                            時間を追加</button>
+                                    </div>
+                                    <p class="form-hint">任意の時間を追加できます（例: 08:30、12:30など）</p>
+                                </div>
+                                <button type="submit" class="btn btn-success">運行日程を追加</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📅</div>
+                                <h3 class="card-title">登録済み運行日程</h3>
+                            </div>
+                            <div class="schedule-list" id="scheduleList">
+                                <!-- JSで生成 -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 乗車場所セクション -->
+                    <section id="locationsSection" class="hidden">
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="card-icon">➕</div>
+                                <h3 class="card-title">乗車場所の追加</h3>
+                            </div>
+                            <form id="addLocationForm">
+                                <div class="form-group">
+                                    <label class="form-label">場所名</label>
+                                    <input type="text" class="form-input" id="locationName" placeholder="例: 町役場前"
+                                        required style="max-width: 400px;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">住所（任意）</label>
+                                    <input type="text" class="form-input" id="locationAddress"
+                                        placeholder="例: 〒XXX-XXXX 町1-1-1" style="max-width: 400px;">
+                                </div>
+                                <button type="submit" class="btn btn-success">乗車場所を追加</button>
+                            </form>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">📍</div>
+                                <h3 class="card-title">登録済み乗車場所</h3>
+                            </div>
+                            <div id="locationsList">
+                                <!-- JSで生成 -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 設定セクション -->
+                    <section id="settingsSection" class="hidden">
+                        <div class="card">
+                            <div class="card-header">
+                                <div class="card-icon">⚙️</div>
+                                <h3 class="card-title">システム設定</h3>
+                            </div>
+                            <div class="alert alert-info mb-3">
+                                <span class="alert-icon">ℹ️</span>
+                                <div>設定を変更するには、<code>data/config.json</code>ファイルを編集してください。</div>
+                            </div>
+                            <div class="reservation-summary" id="currentSettings">
+                                <!-- JSで生成 -->
+                            </div>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <div class="card-icon">🔑</div>
+                                <h3 class="card-title">パスワード変更</h3>
+                            </div>
+                            <form id="changePasswordForm">
+                                <div class="form-group">
+                                    <label class="form-label">新しいパスワード</label>
+                                    <input type="password" class="form-input" id="newPassword" required
+                                        style="max-width: 300px;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">パスワード確認</label>
+                                    <input type="password" class="form-input" id="confirmPassword" required
+                                        style="max-width: 300px;">
+                                </div>
+                                <button type="submit" class="btn btn-primary">パスワードを変更</button>
+                            </form>
+                        </div>
+
+                        <div class="card mt-3">
+                            <div class="card-header">
+                                <div class="card-icon">💾</div>
+                                <h3 class="card-title">データ管理</h3>
+                            </div>
+                            <p class="mb-2">ローカルストレージに保存されているデータを管理します。</p>
+                            <div class="flex gap-2" style="flex-wrap: wrap;">
+                                <button class="btn btn-secondary" id="exportData">データをエクスポート</button>
+                                <button class="btn btn-danger" id="clearData">データをクリア</button>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- トースト通知コンテナ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- フッター -->
+    <footer class="footer">
+        <p class="footer-text">© 2026 町のグリスロ予約システム - 管理者ページ</p>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="js/admin.js"></script>
+</body>
+
+</html>

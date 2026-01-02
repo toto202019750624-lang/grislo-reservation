@@ -1,0 +1,24 @@
+{
+    "settings": {
+        "serviceName": "町のグリスロ予約",
+        "vehicleCapacity": 6,
+        "maxPassengersPerReservation": 1,
+        "reservationWindowDays": 40,
+        "cancelDeadlineHours": 24,
+        "timeSlots": [
+            "09:00",
+            "10:00",
+            "11:00",
+            "13:00",
+            "14:00",
+            "15:00",
+            "16:00"
+        ],
+        "emailjs": {
+            "serviceId": "",
+            "templateId": "",
+            "publicKey": ""
+        },
+        "adminPassword": "admin123"
+    }
+}
