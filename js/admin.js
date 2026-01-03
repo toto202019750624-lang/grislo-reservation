@@ -115,16 +115,31 @@ const DataManager = {
         }
     },
 
-    loadSchedule() {
+    // スケジュール（Supabase優先）
+    async loadSchedule() {
+        if (typeof SupabaseDB !== 'undefined') {
+            const supabaseSchedule = await SupabaseDB.getSchedule();
+            if (supabaseSchedule !== null) {
+                AdminState.schedule = supabaseSchedule;
+                Utils.saveToStorage('grislo_schedule', supabaseSchedule);
+                return AdminState.schedule;
+            }
+        }
         AdminState.schedule = Utils.getFromStorage('grislo_schedule', []);
         return AdminState.schedule;
     },
 
-    saveSchedule() {
+    async saveSchedule() {
         Utils.saveToStorage('grislo_schedule', AdminState.schedule);
+        // Supabaseにも同期
+        if (typeof SupabaseDB !== 'undefined') {
+            for (const day of AdminState.schedule) {
+                await SupabaseDB.upsertSchedule(day.date, day.timeSlots);
+            }
+        }
     },
 
-    addScheduleDay(date, timeSlots) {
+    async addScheduleDay(date, timeSlots) {
         const existing = AdminState.schedule.findIndex(s => s.date === date);
         if (existing !== -1) {
             AdminState.schedule[existing] = { date, timeSlots, available: true };
@@ -133,15 +148,32 @@ const DataManager = {
         }
         // 日付順にソート
         AdminState.schedule.sort((a, b) => new Date(a.date) - new Date(b.date));
-        this.saveSchedule();
+        Utils.saveToStorage('grislo_schedule', AdminState.schedule);
+        // Supabaseにも保存
+        if (typeof SupabaseDB !== 'undefined') {
+            await SupabaseDB.upsertSchedule(date, timeSlots);
+        }
     },
 
-    removeScheduleDay(date) {
+    async removeScheduleDay(date) {
         AdminState.schedule = AdminState.schedule.filter(s => s.date !== date);
-        this.saveSchedule();
+        Utils.saveToStorage('grislo_schedule', AdminState.schedule);
+        // Supabaseからも削除
+        if (typeof SupabaseDB !== 'undefined') {
+            await SupabaseDB.deleteSchedule(date);
+        }
     },
 
-    loadPickupLocations() {
+    // 乗車場所（Supabase優先）
+    async loadPickupLocations() {
+        if (typeof SupabaseDB !== 'undefined') {
+            const supabaseLocations = await SupabaseDB.getPickupLocations();
+            if (supabaseLocations && supabaseLocations.length > 0) {
+                AdminState.pickupLocations = supabaseLocations;
+                Utils.saveToStorage('grislo_locations', supabaseLocations);
+                return AdminState.pickupLocations;
+            }
+        }
         AdminState.pickupLocations = Utils.getFromStorage('grislo_locations', []);
         return AdminState.pickupLocations;
     },
@@ -152,35 +184,58 @@ const DataManager = {
             const data = await response.json();
             if (!AdminState.pickupLocations.length) {
                 AdminState.pickupLocations = data.locations || [];
-                this.savePickupLocations();
+                await this.savePickupLocations();
             }
         } catch (e) {
             console.error('Pickup locations load error:', e);
         }
     },
 
-    savePickupLocations() {
+    async savePickupLocations() {
         Utils.saveToStorage('grislo_locations', AdminState.pickupLocations);
     },
 
-    addPickupLocation(name, address = '') {
+    async addPickupLocation(name, address = '') {
         const id = Utils.generateId('loc');
         AdminState.pickupLocations.push({ id, name, address });
-        this.savePickupLocations();
+        Utils.saveToStorage('grislo_locations', AdminState.pickupLocations);
+        // Supabaseにも保存
+        if (typeof SupabaseDB !== 'undefined') {
+            await SupabaseDB.addPickupLocation(id, name, address);
+        }
         return { id, name, address };
     },
 
-    removePickupLocation(id) {
+    async removePickupLocation(id) {
         AdminState.pickupLocations = AdminState.pickupLocations.filter(l => l.id !== id);
-        this.savePickupLocations();
+        Utils.saveToStorage('grislo_locations', AdminState.pickupLocations);
+        // Supabaseからも削除
+        if (typeof SupabaseDB !== 'undefined') {
+            await SupabaseDB.deletePickupLocation(id);
+        }
     },
 
-    loadReservations() {
+    // 予約（Supabase優先）
+    async loadReservations() {
+        if (typeof SupabaseDB !== 'undefined') {
+            const supabaseReservations = await SupabaseDB.getReservations();
+            if (supabaseReservations !== null) {
+                AdminState.reservations = supabaseReservations;
+                Utils.saveToStorage('grislo_reservations', supabaseReservations);
+                return AdminState.reservations;
+            }
+        }
         AdminState.reservations = Utils.getFromStorage('grislo_reservations', []);
         return AdminState.reservations;
     },
 
-    cancelReservation(reservationId) {
+    async cancelReservation(reservationId) {
+        // Supabaseを更新
+        if (typeof SupabaseDB !== 'undefined') {
+            await SupabaseDB.cancelReservation(reservationId);
+        }
+
+        // ローカルも更新
         const index = AdminState.reservations.findIndex(r => r.id === reservationId);
         if (index !== -1) {
             AdminState.reservations[index].status = 'cancelled';
@@ -786,9 +841,9 @@ async function initAdmin() {
 
     // データ読み込み
     await DataManager.loadConfig();
-    DataManager.loadSchedule();
-    DataManager.loadReservations();
-    DataManager.loadPickupLocations();
+    await DataManager.loadSchedule();
+    await DataManager.loadReservations();
+    await DataManager.loadPickupLocations();
     await DataManager.loadDefaultPickupLocations();
 
     // セッションチェック

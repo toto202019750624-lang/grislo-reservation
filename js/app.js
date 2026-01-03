@@ -117,16 +117,27 @@ const DataManager = {
     }
   },
 
-  // 運行スケジュールを読み込み（localStorageから読み込み、ない場合はJSONファイルから読み込み）
+  // 運行スケジュールを読み込み（Supabase優先、フォールバックはlocalStorage）
   async loadSchedule() {
-    // まずlocalStorageから読み込み（管理者ページで登録されたデータ）
+    // Supabaseから読み込み試行
+    if (typeof SupabaseDB !== 'undefined') {
+      const supabaseSchedule = await SupabaseDB.getSchedule();
+      if (supabaseSchedule && supabaseSchedule.length > 0) {
+        AppState.schedule = supabaseSchedule;
+        // localStorageにも同期
+        Utils.saveToStorage('grislo_schedule', supabaseSchedule);
+        return AppState.schedule;
+      }
+    }
+
+    // localStorageから読み込み
     const localSchedule = Utils.getFromStorage('grislo_schedule', null);
     if (localSchedule && localSchedule.length > 0) {
       AppState.schedule = localSchedule;
       return AppState.schedule;
     }
 
-    // localStorageにない場合はJSONファイルから読み込み
+    // JSONファイルから読み込み
     try {
       const response = await fetch('data/schedule.json');
       const data = await response.json();
@@ -139,16 +150,27 @@ const DataManager = {
     }
   },
 
-  // 乗車場所リストを読み込み（localStorageから読み込み、ない場合はJSONファイルから読み込み）
+  // 乗車場所リストを読み込み（Supabase優先、フォールバックはlocalStorage）
   async loadPickupLocations() {
-    // まずlocalStorageから読み込み（管理者ページで登録されたデータ）
+    // Supabaseから読み込み試行
+    if (typeof SupabaseDB !== 'undefined') {
+      const supabaseLocations = await SupabaseDB.getPickupLocations();
+      if (supabaseLocations && supabaseLocations.length > 0) {
+        AppState.pickupLocations = supabaseLocations;
+        // localStorageにも同期
+        Utils.saveToStorage('grislo_locations', supabaseLocations);
+        return AppState.pickupLocations;
+      }
+    }
+
+    // localStorageから読み込み
     const localLocations = Utils.getFromStorage('grislo_locations', null);
     if (localLocations && localLocations.length > 0) {
       AppState.pickupLocations = localLocations;
       return AppState.pickupLocations;
     }
 
-    // localStorageにない場合はJSONファイルから読み込み
+    // JSONファイルから読み込み
     try {
       const response = await fetch('data/pickupLocations.json');
       const data = await response.json();
@@ -161,21 +183,45 @@ const DataManager = {
     }
   },
 
-  // 予約データを読み込み（localStorageから）
-  loadReservations() {
+  // 予約データを読み込み（Supabase優先、フォールバックはlocalStorage）
+  async loadReservations() {
+    // Supabaseから読み込み試行
+    if (typeof SupabaseDB !== 'undefined') {
+      const supabaseReservations = await SupabaseDB.getReservations();
+      if (supabaseReservations !== null) {
+        AppState.reservations = supabaseReservations;
+        // localStorageにも同期
+        Utils.saveToStorage('grislo_reservations', supabaseReservations);
+        return AppState.reservations;
+      }
+    }
+
+    // localStorageから読み込み
     AppState.reservations = Utils.getFromStorage('grislo_reservations', []);
     return AppState.reservations;
   },
 
-  // 予約を保存
-  saveReservation(reservation) {
+  // 予約を保存（SupabaseとlocalStorage両方に保存）
+  async saveReservation(reservation) {
+    // Supabaseに保存
+    if (typeof SupabaseDB !== 'undefined') {
+      await SupabaseDB.addReservation(reservation);
+    }
+
+    // ローカルにも保存
     AppState.reservations.push(reservation);
     Utils.saveToStorage('grislo_reservations', AppState.reservations);
     return reservation;
   },
 
-  // 予約をキャンセル
-  cancelReservation(reservationId) {
+  // 予約をキャンセル（SupabaseとlocalStorage両方を更新）
+  async cancelReservation(reservationId) {
+    // Supabaseを更新
+    if (typeof SupabaseDB !== 'undefined') {
+      await SupabaseDB.cancelReservation(reservationId);
+    }
+
+    // ローカルも更新
     const index = AppState.reservations.findIndex(r => r.id === reservationId);
     if (index !== -1) {
       AppState.reservations[index].status = 'cancelled';
@@ -963,7 +1009,7 @@ async function initApp() {
   await DataManager.loadConfig();
   await DataManager.loadSchedule();
   await DataManager.loadPickupLocations();
-  DataManager.loadReservations();
+  await DataManager.loadReservations();
 
   // UIを初期化
   Calendar.render();
