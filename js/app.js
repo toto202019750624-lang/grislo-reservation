@@ -958,6 +958,12 @@ function setupEventHandlers() {
 
     UI.hideConfirmModal();
     UI.showCompleteModal(formData.id);
+
+    // 予約完了後にUIを更新
+    UI.renderMyReservations();
+    Calendar.render();
+    UI.updateStepIndicator();
+
     Toast.show('予約が完了しました！', 'success');
   });
 
