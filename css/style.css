@@ -1270,6 +1270,39 @@ body {
     align-items: start;
   }
 
+  /* ページタイトルは両カラムにまたがる */
+  .page-title {
+    grid-column: 1 / -1;
+    padding: 10px 0;
+    text-align: center;
+  }
+
+  .page-title h1 {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+  }
+
+  .page-title p {
+    font-size: 0.8rem;
+  }
+
+  /* ステップインジケーターは両カラムにまたがる */
+  .step-indicator {
+    grid-column: 1 / -1;
+    margin-bottom: 8px;
+    padding: 8px 0;
+  }
+
+  /* 予約フローは左カラム */
+  .reservation-flow {
+    grid-column: 1;
+  }
+
+  /* マイ予約は右カラム */
+  #myReservations {
+    grid-column: 2;
+  }
+
   /* カードを横に並べる */
   .card {
     padding: 10px 14px;
@@ -1278,26 +1311,6 @@ body {
 
   .card.mt-4 {
     margin-top: 0 !important;
-  }
-
-  /* マイ予約を右カラムに配置 */
-  #myReservations {
-    grid-column: 2;
-    grid-row: 2;
-    order: -1;
-  }
-
-  /* reservation-flowは左カラム */
-  .reservation-flow {
-    grid-column: 1;
-    grid-row: 2;
-  }
-
-  /* ステップインジケーターは両カラムにまたがる */
-  .steps {
-    grid-column: 1 / -1;
-    margin-bottom: 8px;
-    padding: 8px 0;
   }
 
   .step {
