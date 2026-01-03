@@ -195,15 +195,16 @@ const DataManager = {
         Utils.saveToStorage('grislo_locations', AdminState.pickupLocations);
     },
 
-    async addPickupLocation(name, address = '') {
+    async addPickupLocation(name, address = '', timeOffset = 0) {
         const id = Utils.generateId('loc');
-        AdminState.pickupLocations.push({ id, name, address });
+        const location = { id, name, address, timeOffset };
+        AdminState.pickupLocations.push(location);
         Utils.saveToStorage('grislo_locations', AdminState.pickupLocations);
         // Supabaseにも保存
         if (typeof SupabaseDB !== 'undefined') {
             await SupabaseDB.addPickupLocation(id, name, address);
         }
-        return { id, name, address };
+        return location;
     },
 
     async removePickupLocation(id) {
@@ -550,6 +551,44 @@ const AdminUI = {
                 }
             });
         });
+
+        // コピー元日程リストを更新
+        this.updateCopySourceList();
+    },
+
+    // コピー元日程リストを更新
+    updateCopySourceList() {
+        const select = document.getElementById('copySourceDate');
+        if (!select) return;
+
+        const today = Utils.formatDate(new Date());
+        const futureSchedule = AdminState.schedule.filter(s => s.date >= today);
+
+        select.innerHTML = '<option value="">選択してください</option>' +
+            futureSchedule.map(s => `<option value="${s.date}">${Utils.formatDateJP(s.date)} (${s.timeSlots.length}枠)</option>`).join('');
+    },
+
+    // 日程をコピー
+    async copySchedule(sourceDate, startDate, endDate) {
+        const sourceSchedule = AdminState.schedule.find(s => s.date === sourceDate);
+        if (!sourceSchedule) {
+            Toast.show('コピー元の日程が見つかりません', 'error');
+            return 0;
+        }
+
+        let copiedCount = 0;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+
+        for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+            const dateStr = Utils.formatDate(d);
+            if (dateStr !== sourceDate) {
+                await DataManager.addScheduleDay(dateStr, [...sourceSchedule.timeSlots]);
+                copiedCount++;
+            }
+        }
+
+        return copiedCount;
     },
 
     renderLocationsList() {
@@ -792,19 +831,48 @@ function setupEventHandlers() {
         e.preventDefault();
         const name = document.getElementById('locationName').value.trim();
         const address = document.getElementById('locationAddress').value.trim();
+        const timeOffset = parseInt(document.getElementById('locationTimeOffset')?.value || 0);
 
         if (!name) {
             Toast.show('場所名を入力してください', 'warning');
             return;
         }
 
-        DataManager.addPickupLocation(name, address);
+        DataManager.addPickupLocation(name, address, timeOffset);
         Toast.show('乗車場所を追加しました', 'success');
         AdminUI.renderLocationsList();
 
         // フォームリセット
         document.getElementById('locationName').value = '';
         document.getElementById('locationAddress').value = '';
+        document.getElementById('locationTimeOffset').value = '0';
+    });
+
+    // 日程コピー
+    document.getElementById('copyScheduleBtn')?.addEventListener('click', async () => {
+        const sourceDate = document.getElementById('copySourceDate').value;
+        const startDate = document.getElementById('copyTargetDateStart').value;
+        const endDate = document.getElementById('copyTargetDateEnd').value;
+
+        if (!sourceDate) {
+            Toast.show('コピー元の日程を選択してください', 'warning');
+            return;
+        }
+        if (!startDate || !endDate) {
+            Toast.show('コピー先の開始日と終了日を入力してください', 'warning');
+            return;
+        }
+        if (startDate > endDate) {
+            Toast.show('終了日は開始日以降を指定してください', 'warning');
+            return;
+        }
+
+        const copiedCount = await AdminUI.copySchedule(sourceDate, startDate, endDate);
+        if (copiedCount > 0) {
+            Toast.show(`${copiedCount}日分の日程をコピーしました`, 'success');
+            AdminUI.renderScheduleList();
+            AdminUI.renderStats();
+        }
     });
 
     // パスワード変更

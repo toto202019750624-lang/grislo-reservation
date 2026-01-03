@@ -175,21 +175,6 @@
         <!-- JSで生成 -->
       </div>
     </section>
-
-    <!-- 予約確認セクション -->
-    <section class="card mt-4 animate-slide-up" id="check">
-      <div class="card-header">
-        <div class="card-icon">🔍</div>
-        <h2 class="card-title">予約番号で検索</h2>
-      </div>
-      <p class="mb-2">予約番号がわかる場合はこちらで検索できます。</p>
-      <form id="checkReservationForm" class="flex gap-2" style="flex-wrap: wrap;">
-        <input type="text" class="form-input" id="reservationId" placeholder="予約番号（例: RES-20260102-001）"
-          style="flex: 1; min-width: 200px;">
-        <button type="submit" class="btn btn-secondary">検索</button>
-      </form>
-      <div id="reservationResult" class="mt-2 hidden"></div>
-    </section>
   </main>
 
   <!-- 確認モーダル -->
@@ -228,16 +213,8 @@
       <div class="modal-body text-center">
         <div style="font-size: 5rem; margin-bottom: 1rem;">✅</div>
         <p style="font-size: 1.25rem; margin-bottom: 1rem;">ご予約ありがとうございます！</p>
-        <div class="alert alert-success">
-          <span class="alert-icon">📋</span>
-          <div>
-            <strong>予約番号</strong><br>
-            <span id="completedReservationId" style="font-size: 1.5rem; font-weight: bold;"></span>
-          </div>
-        </div>
-        <p class="mt-2" style="color: var(--text-secondary);">
-          この予約番号は予約の確認やキャンセルに必要です。<br>
-          スクリーンショットなどで保存してください。
+        <p style="color: var(--text-secondary);">
+          予約内容は「マイ予約」から確認・キャンセルできます。
         </p>
       </div>
       <div class="modal-footer justify-center">

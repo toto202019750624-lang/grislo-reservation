@@ -349,6 +349,35 @@
                             </form>
                         </div>
 
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="card-icon">📋</div>
+                                <h3 class="card-title">日程をコピー</h3>
+                            </div>
+                            <div class="schedule-copy-form">
+                                <p class="mb-2" style="color: var(--text-secondary);">登録済みの日程を別の日に一括コピーできます。</p>
+                                <div class="form-group">
+                                    <label class="form-label">コピー元の日程</label>
+                                    <select class="form-select" id="copySourceDate" style="max-width: 300px;">
+                                        <option value="">選択してください</option>
+                                        <!-- JSで生成 -->
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">コピー先の日付（複数選択可）</label>
+                                    <div class="flex gap-1 mb-1" style="flex-wrap: wrap;">
+                                        <input type="date" class="form-input" id="copyTargetDateStart"
+                                            style="max-width: 180px;">
+                                        <span style="line-height: 40px;">〜</span>
+                                        <input type="date" class="form-input" id="copyTargetDateEnd"
+                                            style="max-width: 180px;">
+                                    </div>
+                                    <p class="form-hint">期間を指定すると、その間の全日にコピーします</p>
+                                </div>
+                                <button type="button" class="btn btn-primary" id="copyScheduleBtn">日程をコピー</button>
+                            </div>
+                        </div>
+
                         <div class="card">
                             <div class="card-header">
                                 <div class="card-icon">📅</div>
@@ -372,6 +401,12 @@
                                     <label class="form-label">場所名</label>
                                     <input type="text" class="form-input" id="locationName" placeholder="例: 町役場前"
                                         required style="max-width: 400px;">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">到着時間オフセット（分）</label>
+                                    <input type="number" class="form-input" id="locationTimeOffset" value="0" min="0"
+                                        max="60" style="max-width: 150px;">
+                                    <p class="form-hint">基準時刻からの到着時間差（例: 5分後に到着）</p>
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">住所（任意）</label>
