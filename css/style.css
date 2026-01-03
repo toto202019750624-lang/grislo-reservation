@@ -1259,169 +1259,185 @@ body {
    =================================== */
 @media (min-width: 1024px) {
 
-  /* メインコンテンツの最大幅を制限 */
+  /* 2カラムレイアウト */
   .main-content {
-    max-width: 800px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 12px 20px;
+    padding: 10px 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    align-items: start;
   }
 
-  /* カードのパディングを小さく */
+  /* カードを横に並べる */
   .card {
-    padding: 12px 16px;
-    margin-bottom: 12px;
-  }
-
-  .card.mt-4 {
-    margin-top: 12px !important;
-  }
-
-  /* ヘッダーをコンパクトに */
-  .header {
-    height: 48px;
-    padding: 0 16px;
-  }
-
-  .logo-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 1.1rem;
-  }
-
-  .logo-title {
-    font-size: 0.95rem;
-  }
-
-  /* カレンダーをコンパクトに */
-  .calendar {
-    max-width: 420px;
-    margin: 0 auto;
-  }
-
-  .calendar-header {
-    padding: 6px 10px;
-    font-size: 0.85rem;
-  }
-
-  .calendar-grid {
-    padding: 6px;
-    gap: 3px;
-  }
-
-  .calendar-day {
-    padding: 8px 4px;
-    font-size: 0.8rem;
-  }
-
-  /* 時間スロットをコンパクトに */
-  .time-grid {
-    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 6px;
-  }
-
-  .time-slot-btn {
-    padding: 6px 10px;
-    font-size: 0.85rem;
-  }
-
-  /* フォーム要素のサイズ調整 */
-  .form-group {
+    padding: 10px 14px;
     margin-bottom: 10px;
   }
 
-  .form-label {
+  .card.mt-4 {
+    margin-top: 0 !important;
+  }
+
+  /* ステップインジケーターは2列目に */
+  .steps {
+    grid-column: 1 / -1;
+    margin-bottom: 8px;
+    padding: 8px 0;
+  }
+
+  .step {
+    font-size: 0.65rem;
+  }
+
+  .step-number {
+    width: 20px;
+    height: 20px;
+    font-size: 0.6rem;
+  }
+
+  /* ヘッダー */
+  .header {
+    height: 44px;
+    padding: 0 14px;
+  }
+
+  .logo-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 1rem;
+  }
+
+  .logo-title {
+    font-size: 0.9rem;
+  }
+
+  /* カード共通 */
+  .card-header {
+    margin-bottom: 8px;
+  }
+
+  .card-title {
+    font-size: 0.9rem;
+  }
+
+  .card-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 0.85rem;
+  }
+
+  /* カレンダー */
+  .calendar {
+    max-width: 100%;
+  }
+
+  .calendar-header {
+    padding: 5px 8px;
     font-size: 0.8rem;
-    margin-bottom: 3px;
+  }
+
+  .calendar-grid {
+    padding: 5px;
+    gap: 2px;
+  }
+
+  .calendar-day {
+    padding: 6px 3px;
+    font-size: 0.75rem;
+  }
+
+  .calendar-day::after {
+    width: 4px;
+    height: 4px;
+  }
+
+  /* 時間スロット */
+  .time-grid {
+    grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+    gap: 5px;
+  }
+
+  .time-slot-btn {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+
+  /* フォーム */
+  .form-group {
+    margin-bottom: 8px;
+  }
+
+  .form-label {
+    font-size: 0.75rem;
+    margin-bottom: 2px;
   }
 
   .form-input,
   .form-select,
   .form-textarea {
-    padding: 6px 10px;
-    font-size: 0.85rem;
-  }
-
-  /* ボタンのサイズ調整 */
-  .btn {
-    padding: 6px 14px;
-    font-size: 0.85rem;
-  }
-
-  .btn-lg {
-    padding: 8px 18px;
-    font-size: 0.95rem;
-  }
-
-  /* セクションタイトル */
-  .card-title {
-    font-size: 0.95rem;
-  }
-
-  .card-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 0.9rem;
-  }
-
-  .card-header {
-    margin-bottom: 10px;
-  }
-
-  /* ステップインジケーター */
-  .steps {
-    margin-bottom: 12px;
-  }
-
-  .step {
-    font-size: 0.7rem;
-  }
-
-  .step-number {
-    width: 22px;
-    height: 22px;
-    font-size: 0.65rem;
-  }
-
-  /* マイ予約をコンパクトに */
-  .my-reservation-card {
-    padding: 10px 12px;
-    margin-bottom: 8px;
-  }
-
-  .my-reservation-card .reservation-date {
-    font-size: 0.95rem;
-  }
-
-  .my-reservation-card .reservation-time {
+    padding: 5px 8px;
     font-size: 0.8rem;
   }
 
-  .my-reservation-card .reservation-location {
+  /* ボタン */
+  .btn {
+    padding: 5px 12px;
+    font-size: 0.8rem;
+  }
+
+  .btn-lg {
+    padding: 7px 14px;
+    font-size: 0.9rem;
+  }
+
+  /* 乗車場所ボタン */
+  .location-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+
+  /* マイ予約 */
+  .my-reservation-card {
+    padding: 8px 10px;
+    margin-bottom: 6px;
+  }
+
+  .my-reservation-card .reservation-date {
+    font-size: 0.85rem;
+  }
+
+  .my-reservation-card .reservation-time {
     font-size: 0.75rem;
+  }
+
+  .my-reservation-card .reservation-location {
+    font-size: 0.7rem;
     margin-top: 2px;
   }
 
   .no-reservations {
-    padding: 20px 12px;
+    padding: 16px 10px;
   }
 
   .no-reservations-icon {
-    font-size: 2rem;
-    margin-bottom: 8px;
-  }
-
-  /* 乗車場所ボタンをコンパクトに */
-  .location-btn {
-    padding: 8px 12px;
-    font-size: 0.85rem;
+    font-size: 1.8rem;
+    margin-bottom: 6px;
   }
 
   /* フッター */
   .footer {
-    padding: 12px;
+    padding: 10px;
   }
 
   .footer-text {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
+  }
+
+  /* アラート */
+  .alert {
+    padding: 8px 12px;
+    font-size: 0.8rem;
   }
 }
