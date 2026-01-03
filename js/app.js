@@ -1032,9 +1032,9 @@ async function initApp() {
 // ===================================
 const App = {
   // マイ予約からキャンセル
-  cancelMyReservation(reservationId) {
+  async cancelMyReservation(reservationId) {
     if (confirm('この予約をキャンセルしますか？')) {
-      const result = DataManager.cancelReservation(reservationId);
+      const result = await DataManager.cancelReservation(reservationId);
       if (result) {
         Toast.show('予約をキャンセルしました', 'success');
         UI.renderMyReservations();
