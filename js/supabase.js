@@ -8,21 +8,29 @@ const SUPABASE_URL = 'https://ycabpfxbzyypljgjflxi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InljYWJwZnhienl5cGxqZ2pmbHhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczODEwOTIsImV4cCI6MjA4Mjk1NzA5Mn0.DcGEiab9FrrWfAE7cYHDaSCkbVZ0GqR7baUpicql7D8';
 
 // Supabase クライアントを初期化
-let supabase = null;
+let supabaseClient = null;
 
 // Supabase が利用可能かチェック
 function isSupabaseAvailable() {
-    return typeof window !== 'undefined' &&
-        typeof window.supabase !== 'undefined' &&
-        typeof window.supabase.createClient === 'function';
+    // CDN v2では window.supabase.createClient として公開される
+    if (typeof window !== 'undefined' && window.supabase && typeof window.supabase.createClient === 'function') {
+        return true;
+    }
+    return false;
 }
 
 // Supabase クライアントを取得
 function getSupabaseClient() {
-    if (!supabase && isSupabaseAvailable()) {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    if (!supabaseClient && isSupabaseAvailable()) {
+        try {
+            supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            console.log('Supabase client initialized successfully');
+        } catch (e) {
+            console.error('Supabase client initialization error:', e);
+            return null;
+        }
     }
-    return supabase;
+    return supabaseClient;
 }
 
 // ===================================
