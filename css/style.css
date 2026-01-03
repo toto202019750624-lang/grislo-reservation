@@ -1293,9 +1293,20 @@ body {
     padding: 8px 0;
   }
 
-  /* 予約フローは左カラム */
+  /* 予約フローは左カラム、1カラムに変更 */
   .reservation-flow {
     grid-column: 1;
+    display: block;
+  }
+
+  /* 予約フロー内のカードを縦に並べる */
+  .reservation-flow>.card {
+    margin-bottom: 10px;
+  }
+
+  /* formCardを非表示（日付選択時のみ表示） */
+  #formCard {
+    display: block;
   }
 
   /* マイ予約は右カラム */
