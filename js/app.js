@@ -710,8 +710,7 @@ const UI = {
   },
 
   // 完了モーダルを表示
-  showCompleteModal(reservationId) {
-    document.getElementById('completedReservationId').textContent = reservationId;
+  showCompleteModal() {
     document.getElementById('completeModal').classList.add('active');
   },
 

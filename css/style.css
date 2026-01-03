@@ -1253,3 +1253,119 @@ body {
   font-size: 3rem;
   margin-bottom: 12px;
 }
+
+/* ===================================
+   PC画面コンパクト化（大画面向け）
+   =================================== */
+@media (min-width: 1024px) {
+
+  /* メインコンテンツの最大幅を制限 */
+  .main-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px 24px;
+  }
+
+  /* カードのパディングを小さく */
+  .card {
+    padding: 16px 20px;
+  }
+
+  /* ヘッダーをコンパクトに */
+  .header {
+    height: 56px;
+    padding: 0 20px;
+  }
+
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 1.25rem;
+  }
+
+  .logo-title {
+    font-size: 1rem;
+  }
+
+  /* カレンダーをコンパクトに */
+  .calendar {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  .calendar-header {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  .calendar-grid {
+    padding: 8px;
+    gap: 4px;
+  }
+
+  .calendar-day {
+    padding: 10px 6px;
+    font-size: 0.85rem;
+  }
+
+  /* 時間スロットをコンパクトに */
+  .time-grid {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 8px;
+  }
+
+  .time-slot-btn {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  /* フォーム要素のサイズ調整 */
+  .form-group {
+    margin-bottom: 12px;
+  }
+
+  .form-label {
+    font-size: 0.85rem;
+    margin-bottom: 4px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+  }
+
+  /* ボタンのサイズ調整 */
+  .btn {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  }
+
+  .btn-lg {
+    padding: 10px 20px;
+    font-size: 1rem;
+  }
+
+  /* セクションタイトル */
+  .card-title {
+    font-size: 1rem;
+  }
+
+  .card-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+  }
+
+  /* ステップインジケーター */
+  .step {
+    font-size: 0.75rem;
+  }
+
+  .step-number {
+    width: 24px;
+    height: 24px;
+    font-size: 0.7rem;
+  }
+}
