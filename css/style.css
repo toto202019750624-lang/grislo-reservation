@@ -1280,7 +1280,20 @@ body {
     margin-top: 0 !important;
   }
 
-  /* ステップインジケーターは2列目に */
+  /* マイ予約を右カラムに配置 */
+  #myReservations {
+    grid-column: 2;
+    grid-row: 2;
+    order: -1;
+  }
+
+  /* reservation-flowは左カラム */
+  .reservation-flow {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  /* ステップインジケーターは両カラムにまたがる */
   .steps {
     grid-column: 1 / -1;
     margin-bottom: 8px;
